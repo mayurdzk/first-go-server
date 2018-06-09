@@ -14,5 +14,13 @@ func main() {
 		// TODO, Use `getAllPeople()` instead.
 		json.NewEncoder(w).Encode(people)
 	})
+
+	router.HandleFunc("/add-person", func(w http.ResponseWriter, r *http.Request) {
+		newPerson := NewPerson()
+		people = append(people, newPerson)
+
+		http.Redirect(w, r, "people", http.StatusFound)
+	})
+
 	log.Fatal(http.ListenAndServe(":8000", router))
 }

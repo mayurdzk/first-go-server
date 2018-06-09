@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"encoding/json"
 	"net/http"
+	"math/rand"
+  	"time"
 )
 
 // TODO: Why is there a requirement to export names?
@@ -10,7 +13,7 @@ import (
 type Person struct {
 	// Notice custom JSON fields in response.
 	Name string `json:"persons_name,omitempty"`
-	Age  int    `json:"persons_age,omitempty"`
+	Age  int8    `json:"persons_age,omitempty"`
 }
 
 // Creates an array of the Person object that's used throughout the app.
@@ -30,4 +33,22 @@ func getAllPeople(w http.ResponseWriter, r *http.Request) {
 	people = append(people, Person{Name: "John Doe", Age: 21})
 
 	json.NewEncoder(w).Encode(people)
+}
+
+func NewPerson() Person {
+	// TODO: Take these out of the function. Why initialise them each time the function is called?
+	firstNames := [4]string{"Jack", "Joe", "Lisa", "Margaret"}
+	lastNames := [4]string{"Smith", "Seinfeld", "Gruber", "Perry"}
+	ages := [...]int8{26, 23, 30, 21, 19, 34}
+
+	s := rand.NewSource(time.Now().Unix())
+	r := rand.New(s) // initialize local pseudorandom generator 
+	
+	firstName := firstNames[r.Intn(len(firstNames))]
+	lastName := lastNames[r.Intn(len(lastNames))]
+	age := ages[r.Intn(len(ages))]
+
+	name := fmt.Sprintf("%s %s", firstName, lastName)
+
+	return Person{Name: name, Age: age}
 }
