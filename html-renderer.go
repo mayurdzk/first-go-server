@@ -3,9 +3,13 @@ package main
 // TODO: Separate into its own package
 
 import (
-	"fmt"
 	"html/template"
 )
+
+type FormValidationResult struct {
+	Success        bool
+	IsAgeIncorrect bool
+}
 
 func peopleHTMLTemplate() *template.Template {
 	var tmpl = `<html>
@@ -29,8 +33,9 @@ func newPersonHTMLTemplate() *template.Template {
 	var tmpl = `
 	{{if .Success}}
 	<h1>Thanks!</h1>
-{{else}}
-	<h1>New Person</h1>
+	{{else}}
+	<h1>New Person{{if .IsAgeIncorrect}}😿{{end}}</h1>
+	{{if .IsAgeIncorrect}}<h3>Please enter a valid age.</h3>{{end}}
 	<form method="POST">
 		<label>Name:</label><br />
 		<input type="text" name="name"><br />
@@ -38,7 +43,7 @@ func newPersonHTMLTemplate() *template.Template {
 		<input type="text" name="age"><br />
 		<input type="submit">
 	</form>
-{{end}}
+	{{end}}
 	`
 	return createTemplate(tmpl)
 }
@@ -47,10 +52,8 @@ func createTemplate(templateString string) *template.Template {
 	// TODO: Why is a name required?
 	t := template.New("main")
 	t, err := t.Parse(templateString)
-	fmt.Println(t)
 	if err != nil {
 		panic(err)
 	}
-
 	return t
 }

@@ -21,15 +21,17 @@ func main() {
 
 		if r.Method != http.MethodPost {
 			// Serve the user the form
-			t.Execute(w, nil)
+			formSubmitionNeededResult := FormValidationResult{Success: false, IsAgeIncorrect: false}
+			t.Execute(w, formSubmitionNeededResult)
 			return
 		}
 
 		ageString := r.FormValue("age")
 		ageNum, err := strconv.ParseInt(ageString, 10, 8)
-		if err != nil {
-			// TODO: Handle this better. Age needs to be a number between 0-150
-			panic(err)
+		if err != nil || ageNum < 1 || ageNum > 150 {
+			invalidAgeFormResult := FormValidationResult{Success: false, IsAgeIncorrect: true}
+			t.Execute(w, invalidAgeFormResult)
+			return
 		}
 		age := int8(ageNum)
 
@@ -39,7 +41,8 @@ func main() {
 		}
 		people = append(people, newPerson)
 
-		t.Execute(w, struct{ Success bool }{true})
+		validFormResult := FormValidationResult{Success: true, IsAgeIncorrect: false}
+		t.Execute(w, validFormResult)
 	})
 
 	log.Fatal(http.ListenAndServe(":8000", router))
