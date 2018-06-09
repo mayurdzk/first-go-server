@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"encoding/json"
 	"net/http"
-	"math/rand"
-  	"time"
+	"strconv"
 )
 
 // TODO: Why is there a requirement to export names?
@@ -13,7 +11,7 @@ import (
 type Person struct {
 	// Notice custom JSON fields in response.
 	Name string `json:"persons_name,omitempty"`
-	Age  int8    `json:"persons_age,omitempty"`
+	Age  int8   `json:"persons_age,omitempty"`
 }
 
 // Creates an array of the Person object that's used throughout the app.
@@ -26,29 +24,39 @@ func BuildPeopleArray() []Person {
 	return people
 }
 
-// TODO: Why are we passing in r? Can we do something interesting with r by reading the path, etc?
-func getAllPeople(w http.ResponseWriter, r *http.Request) {
-	var people []Person
-	people = append(people, Person{Name: "Jane Doe", Age: 20})
-	people = append(people, Person{Name: "John Doe", Age: 21})
-
-	json.NewEncoder(w).Encode(people)
+func getAllPeople(w http.ResponseWriter, people []Person) {
+	t := peopleHTMLTemplate()
+	t.Execute(w, people)
 }
 
-func NewPerson() Person {
-	// TODO: Take these out of the function. Why initialise them each time the function is called?
-	firstNames := [4]string{"Jack", "Joe", "Lisa", "Margaret"}
-	lastNames := [4]string{"Smith", "Seinfeld", "Gruber", "Perry"}
-	ages := [...]int8{26, 23, 30, 21, 19, 34}
+func addPerson(w http.ResponseWriter, r *http.Request, people []Person) []Person {
+	t := newPersonHTMLTemplate()
 
-	s := rand.NewSource(time.Now().Unix())
-	r := rand.New(s) // initialize local pseudorandom generator 
-	
-	firstName := firstNames[r.Intn(len(firstNames))]
-	lastName := lastNames[r.Intn(len(lastNames))]
-	age := ages[r.Intn(len(ages))]
+	if r.Method != http.MethodPost {
+		// Serve the user the form
+		formSubmitionNeededResult := FormValidationResult{Success: false, IsAgeIncorrect: false}
+		t.Execute(w, formSubmitionNeededResult)
+		return people
+	}
 
-	name := fmt.Sprintf("%s %s", firstName, lastName)
+	ageString := r.FormValue("age")
+	ageNum, err := strconv.ParseInt(ageString, 10, 8)
+	if err != nil || ageNum < 1 || ageNum > 150 {
+		invalidAgeFormResult := FormValidationResult{Success: false, IsAgeIncorrect: true}
+		t.Execute(w, invalidAgeFormResult)
+		return people
+	}
+	age := int8(ageNum)
 
-	return Person{Name: name, Age: age}
+	newPerson := Person{
+		Name: r.FormValue("name"),
+		Age:  age,
+	}
+	fmt.Println(people)
+	people = append(people, newPerson)
+	fmt.Println(people)
+
+	validFormResult := FormValidationResult{Success: true, IsAgeIncorrect: false}
+	t.Execute(w, validFormResult)
+	return people
 }
