@@ -1,0 +1,2 @@
+go build
+./first-go-server
