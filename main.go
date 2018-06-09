@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 )
@@ -12,7 +11,8 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/people", func(w http.ResponseWriter, r *http.Request) {
 		// TODO, Use `getAllPeople()` instead.
-		json.NewEncoder(w).Encode(people)
+		t := peopleHTMLTemplate()
+		t.Execute(w, people)
 	})
 
 	router.HandleFunc("/add-person", func(w http.ResponseWriter, r *http.Request) {
