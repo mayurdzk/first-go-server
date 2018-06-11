@@ -7,7 +7,6 @@ import (
 )
 
 type FormValidationResult struct {
-	Success        bool
 	IsAgeIncorrect bool
 }
 
@@ -17,9 +16,10 @@ func peopleHTMLTemplate() *template.Template {
     <title>Hello!</title>
 </head>
 <body>
+	<a href="/add-person">Add Person</a>
 	<ol>
 	{{range .}}
-	<li>{{.Name}}, Aged: {{.Age}}</li>
+	<li>{{.Name}}, aged: {{.Age}}</li>
 	{{end}}
 	</ol>
 </body>
@@ -31,9 +31,6 @@ func peopleHTMLTemplate() *template.Template {
 func newPersonHTMLTemplate() *template.Template {
 	// TODO: Break this out. Use different templates for post and get.
 	var tmpl = `
-	{{if .Success}}
-	<h1>Thanks!</h1>
-	{{else}}
 	<h1>New Person{{if .IsAgeIncorrect}}😿{{end}}</h1>
 	{{if .IsAgeIncorrect}}<h3>Please enter a valid age.</h3>{{end}}
 	<form method="POST">
@@ -43,7 +40,6 @@ func newPersonHTMLTemplate() *template.Template {
 		<input type="text" name="age"><br />
 		<input type="submit">
 	</form>
-	{{end}}
 	`
 	return createTemplate(tmpl)
 }

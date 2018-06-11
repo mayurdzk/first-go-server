@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -34,7 +33,7 @@ func addPerson(w http.ResponseWriter, r *http.Request, people []Person) []Person
 
 	if r.Method != http.MethodPost {
 		// Serve the user the form
-		formSubmitionNeededResult := FormValidationResult{Success: false, IsAgeIncorrect: false}
+		formSubmitionNeededResult := FormValidationResult{IsAgeIncorrect: false}
 		t.Execute(w, formSubmitionNeededResult)
 		return people
 	}
@@ -42,7 +41,7 @@ func addPerson(w http.ResponseWriter, r *http.Request, people []Person) []Person
 	ageString := r.FormValue("age")
 	ageNum, err := strconv.ParseInt(ageString, 10, 8)
 	if err != nil || ageNum < 1 || ageNum > 150 {
-		invalidAgeFormResult := FormValidationResult{Success: false, IsAgeIncorrect: true}
+		invalidAgeFormResult := FormValidationResult{IsAgeIncorrect: true}
 		t.Execute(w, invalidAgeFormResult)
 		return people
 	}
@@ -52,11 +51,8 @@ func addPerson(w http.ResponseWriter, r *http.Request, people []Person) []Person
 		Name: r.FormValue("name"),
 		Age:  age,
 	}
-	fmt.Println(people)
 	people = append(people, newPerson)
-	fmt.Println(people)
 
-	validFormResult := FormValidationResult{Success: true, IsAgeIncorrect: false}
-	t.Execute(w, validFormResult)
+	http.Redirect(w, r, "people", http.StatusFound)
 	return people
 }

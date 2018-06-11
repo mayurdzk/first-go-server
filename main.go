@@ -15,6 +15,10 @@ func main() {
 func firstGoServerRouter(people []Person) *http.ServeMux {
 	router := http.NewServeMux()
 
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/people", http.StatusFound)
+	})
+
 	router.HandleFunc("/people", func(w http.ResponseWriter, r *http.Request) {
 		getAllPeople(w, people)
 	})
