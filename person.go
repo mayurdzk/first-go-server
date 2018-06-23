@@ -23,19 +23,33 @@ func BuildPeopleArray() []Person {
 	return people
 }
 
-func getAllPeople(w http.ResponseWriter, people []Person) {
+func getAllPeople(w http.ResponseWriter, db *DB) {
 	t := peopleHTMLTemplate()
+	var people []Person
+	rows, err := db.Query("SELECT * FROM People")
+        assertNotError(err)
+
+        for rows.Next() {
+            var name string
+			var age int8
+
+            err = rows.Scan(&name, &age)
+            assertNotError(err)
+
+			person := Person{Name: name, Age: age}
+			people = append(people, person)
+        }
 	t.Execute(w, people)
 }
 
-func addPerson(w http.ResponseWriter, r *http.Request, people []Person) []Person {
+func addPerson(w http.ResponseWriter, r *http.Request, db *DB) {
 	t := newPersonHTMLTemplate()
 
 	if r.Method != http.MethodPost {
 		// Serve the user the form
 		formSubmitionNeededResult := FormValidationResult{IsAgeIncorrect: false}
 		t.Execute(w, formSubmitionNeededResult)
-		return people
+		return
 	}
 
 	ageString := r.FormValue("age")
@@ -43,16 +57,15 @@ func addPerson(w http.ResponseWriter, r *http.Request, people []Person) []Person
 	if err != nil || ageNum < 1 || ageNum > 150 {
 		invalidAgeFormResult := FormValidationResult{IsAgeIncorrect: true}
 		t.Execute(w, invalidAgeFormResult)
-		return people
 	}
 	age := int8(ageNum)
+	name := r.FormValue("name")
 
-	newPerson := Person{
-		Name: r.FormValue("name"),
-		Age:  age,
-	}
-	people = append(people, newPerson)
+	stmt, err := db.Prepare("insert into People values(?, ?)")
+	assertNotError(err)
+
+	_, e := stmt.Exec(name, age)
+	assertNotError(e)
 
 	http.Redirect(w, r, "people", http.StatusFound)
-	return people
 }

@@ -1,1 +1,1 @@
-go build && ./first-go-server
+go build && ./first-go-server --username $1 --password $2
