@@ -14,7 +14,7 @@ func main() {
 	namePtr, passwordPtr := getDBCredentials()
 	db := prepareDBConnection(namePtr, passwordPtr)
 
-	router := firstGoServerRouter(db)
+	router := FirstGoServerRouter(db)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
@@ -40,24 +40,6 @@ func prepareDBConnection(name, password *string) *DB {
 	assertNotError(err)
 
 	return db
-}
-
-func firstGoServerRouter(db *DB) *http.ServeMux {
-	router := http.NewServeMux()
-
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/people", http.StatusFound)
-	})
-
-	router.HandleFunc("/people", func(w http.ResponseWriter, r *http.Request) {
-		getAllPeople(w, db)
-	})
-
-	router.HandleFunc("/add-person", func(w http.ResponseWriter, r *http.Request) {
-		addPerson(w, r, db)
-	})
-
-	return router
 }
 
 func assertNotError(e error) {
