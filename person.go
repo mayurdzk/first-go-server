@@ -57,6 +57,7 @@ func addPerson(w http.ResponseWriter, r *http.Request, db *DB) {
 	if err != nil || ageNum < 1 || ageNum > 150 {
 		invalidAgeFormResult := FormValidationResult{IsAgeIncorrect: true}
 		t.Execute(w, invalidAgeFormResult)
+		return
 	}
 	age := int8(ageNum)
 	name := r.FormValue("name")
